@@ -8,15 +8,15 @@ import HistoryCount from "./components/HistoryCount";
 
 
 export default function App() {
-  const { state, dispatch } = useChat();                // ← useContext aquí
+  const { state, dispatch } = useChat();           
   const { ask, isLoading, err } = useOllama("deepseek-r1:1.5b");
   const [input, setInput] = useState("");
 
   const handleSend = async () => {
     const text = input.trim();
     if (!text) return;
-    dispatch({ type: "ADD_USER", text });               // ← escribir en global
-    const reply = await ask(text);                      // ← si tienes parte 2
+    dispatch({ type: "ADD_USER", text });             
+    const reply = await ask(text);                
     dispatch({ type: "ADD_AI", text: reply || "(sin respuesta)" });
     setInput("");
   };
@@ -26,12 +26,12 @@ export default function App() {
       <h1 className="text-2xl font-bold">useContext</h1>
       {err && <p className="text-sm text-red-600">Error: {err}</p>}
 
-      {/* Muestra la conversación global */}
+      {}
       <div className="border rounded-2xl bg-white p-4 h-[50vh] overflow-y-auto">
         <History /> {}
       </div>
 
-      {/* Caja de entrada simple */}
+      {}
       <div className="flex gap-2">
         <input
           className="flex-1 border rounded-xl px-3 py-2"
