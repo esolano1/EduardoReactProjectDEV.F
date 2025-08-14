@@ -1,95 +1,60 @@
 import { useState } from "react";
-import { ChatProvider, useChat } from "./context/ChatContext";
+import { useChat } from "./context/ChatContext";
+// (Si usas Ollama en la parte 2)
 import { useOllama } from "./hooks/useOllama";
 import History from "./components/History";
 import ChatBox from "./components/ChatBox";
-import SavedHistoryDrawer from "./components/SavedHistoryDrawer";
-import { saveChat } from "./utils/historyStorage";
+import HistoryCount from "./components/HistoryCount";
 
-function ChatApp() {
-  const { state, dispatch } = useChat();
-  const { ask, isLoading, err } = useOllama("deepseek-r1:1.5b");
-  const [openDrawer, setOpenDrawer] = useState(true);
-
-  const handleSend = async (text) => {
-    dispatch({ type: "ADD_USER", text });
-    const reply = await ask(text);
-    dispatch({ type: "ADD_AI", text: reply || "(sin respuesta)" });
-  };
-
-  const handleClear = () => {
-    dispatch({ type: "CLEAR" });
-  };
-
-  const handleSave = () => {
-    if (state.history.length === 0) {
-      alert("No hay nada que guardar aún.");
-      return;
-    }
-    const firstUser = state.history.find(m => m.role === "user");
-    const fallbackTitle = `Conversación ${new Date().toLocaleString()}`;
-    const title = firstUser?.text?.slice(0, 50) || fallbackTitle;
-
-    saveChat({ title, messages: state.history });
-    alert("Conversación guardada en historial ✅");
-  };
-
-  const handleLoadFromDrawer = (chat) => {
-    // chat.messages es un arreglo compatible con state.history
-    dispatch({ type: "SET_HISTORY", history: chat.messages });
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-3xl mx-auto space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Chat (Ollama + DeepSeek R1)</h1>
-          <div className="flex gap-2">
-            <button
-              onClick={handleSave}
-              className="text-sm px-3 py-1 rounded-lg border"
-            >
-              Guardar en historial
-            </button>
-            <button
-              onClick={() => setOpenDrawer(true)}
-              className="text-sm px-3 py-1 rounded-lg border"
-            >
-              Ver historial
-            </button>
-            <button
-              onClick={handleClear}
-              className="text-sm px-3 py-1 rounded-lg border"
-            >
-              Nueva conversación
-            </button>
-          </div>
-        </div>
-
-        {err && <p className="text-sm text-red-600">Error: {err}</p>}
-
-        <div className="border rounded-2xl bg-white p-4 h-[65vh] overflow-y-auto">
-          <History items={state.history} />
-        </div>
-
-        <ChatBox onSend={handleSend} disabled={isLoading} />
-        {isLoading && <p className="text-xs text-gray-500">Pensando…</p>}
-      </div>
-
-      {/* Drawer del historial */}
-      <SavedHistoryDrawer
-        open={openDrawer}
-        onClose={() => setOpenDrawer(false)}
-        onLoad={handleLoadFromDrawer}
-      />
-    </div>
-  );
-}
 
 export default function App() {
+  const { state, dispatch } = useChat();                // ← useContext aquí
+  const { ask, isLoading, err } = useOllama("deepseek-r1:1.5b");
+  const [input, setInput] = useState("");
+
+  const handleSend = async () => {
+    const text = input.trim();
+    if (!text) return;
+    dispatch({ type: "ADD_USER", text });               // ← escribir en global
+    const reply = await ask(text);                      // ← si tienes parte 2
+    dispatch({ type: "ADD_AI", text: reply || "(sin respuesta)" });
+    setInput("");
+  };
+
   return (
-    <ChatProvider>
-      <ChatApp />
-    </ChatProvider>
+    <div className="min-h-screen bg-gray-50 p-6 space-y-4">
+      <h1 className="text-2xl font-bold">useContext</h1>
+      {err && <p className="text-sm text-red-600">Error: {err}</p>}
+
+      {/* Muestra la conversación global */}
+      <div className="border rounded-2xl bg-white p-4 h-[50vh] overflow-y-auto">
+        <History /> {}
+      </div>
+
+      {/* Caja de entrada simple */}
+      <div className="flex gap-2">
+        <input
+          className="flex-1 border rounded-xl px-3 py-2"
+          placeholder="Escribe tu mensaje…"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") handleSend(); }}
+          disabled={isLoading}
+        />
+        <button
+          onClick={handleSend}
+          disabled={isLoading}
+          className="px-4 py-2 rounded-xl bg-blue-600 text-white disabled:opacity-60"
+        >
+          Enviar
+        </button>
+        <button
+          onClick={() => dispatch({ type: "CLEAR" })}
+          className="px-4 py-2 rounded-xl border"
+        >
+          Limpiar
+        </button>
+      </div>
+    </div>
   );
 }
