@@ -21,10 +21,26 @@ export default function App() {
     setInput("");
   };
 
+  const pingExpress = async () => {
+  try {
+    const res = await fetch("/express");
+    const text = await res.text();
+    alert(`Backend dice: ${text}`); //
+  } catch (e) {
+    alert("No pude contactar al backend :(");
+  }
+};
   return (
     <div className="min-h-screen bg-gray-50 p-6 space-y-4">
       <h1 className="text-2xl font-bold">useContext</h1>
       {err && <p className="text-sm text-red-600">Error: {err}</p>}
+
+      <button
+  onClick={pingExpress}
+  className="px-3 py-2 rounded-xl border"
+>
+  Probar backend (Hola Mundo)
+</button>
 
       {}
       <div className="border rounded-2xl bg-white p-4 h-[50vh] overflow-y-auto">

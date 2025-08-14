@@ -5,7 +5,15 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api': { target: 'http://localhost:11434', changeOrigin: true }
+
+      '/ollama': { target: 'http://localhost:11434', changeOrigin: true },
+
+
+      '/express': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/express/, '') 
+      }
     }
   }
 })
